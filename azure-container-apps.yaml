@@ -1,0 +1,88 @@
+apiVersion: containerapp.azure.com/v1alpha1
+kind: ContainerApp
+metadata:
+  name: smartchat-frontend
+spec:
+  containers:
+    - name: frontend
+      image: ${REGISTRY_NAME}.azurecr.io/smartchat-frontend:latest
+      env:
+        - name: VITE_API_URL
+          value: https://smartchat-backend.${AZURE_ENVIRONMENT_NAME}.azurecontainerapps.io/api
+      resources:
+        requests:
+          cpu: 0.5
+          memory: 1Gi
+        limits:
+          cpu: 1.0
+          memory: 2Gi
+---
+apiVersion: containerapp.azure.com/v1alpha1
+kind: ContainerApp
+metadata:
+  name: smartchat-backend
+spec:
+  containers:
+    - name: backend
+      image: ${REGISTRY_NAME}.azurecr.io/smartchat-backend:latest
+      env:
+        - name: MONGODB_URL
+          value: mongodb://mongodb:27017/smartchat
+        - name: REDIS_URL
+          value: redis://redis:6379
+        - name: SECRET_KEY
+          value: your-secret-key-change-in-production
+      resources:
+        requests:
+          cpu: 0.5
+          memory: 1Gi
+        limits:
+          cpu: 1.0
+          memory: 2Gi
+---
+apiVersion: containerapp.azure.com/v1alpha1
+kind: ContainerApp
+metadata:
+  name: mongodb
+spec:
+  containers:
+    - name: mongodb
+      image: mongo:latest
+      volumeMounts:
+        - name: mongodb-data
+          mountPath: /data/db
+      resources:
+        requests:
+          cpu: 0.5
+          memory: 1Gi
+        limits:
+          cpu: 1.0
+          memory: 2Gi
+  volumes:
+    - name: mongodb-data
+      persistentVolumeClaim:
+        claimName: mongodb-pvc
+---
+apiVersion: containerapp.azure.com/v1alpha1
+kind: ContainerApp
+metadata:
+  name: redis
+spec:
+  containers:
+    - name: redis
+      image: redis:alpine
+      volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      resources:
+        requests:
+          cpu: 0.25
+          memory: 512Mi
+        limits:
+          cpu: 0.5
+          memory: 1Gi
+  volumes:
+    - name: redis-data
+      persistentVolumeClaim:
+        claimName: redis-pvc
+        
