@@ -1,2 +1,0 @@
-# GEN-AI-MAIN-APP
- 
